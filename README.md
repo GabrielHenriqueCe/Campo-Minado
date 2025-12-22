@@ -1,6 +1,6 @@
 # Campo-Minado-Csharp
 
-*💣 Turnos alternados onde uma bomba escondida no tabuleiro pode decidir tudo.**
+**💣 Turnos alternados onde uma bomba escondida no tabuleiro pode decidir tudo.**
 
 ---
 
