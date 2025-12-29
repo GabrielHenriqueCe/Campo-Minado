@@ -1,14 +1,17 @@
-# Campo-Minado-Csharp
+# Campo-Minado-Csharp V3 (POO)
 
-**💣 Navegue pelo tabuleiro com WASD e evite a bomba escondida.**
+**💣 Navegue pelo tabuleiro com WASD e evite a bomba escondida - Agora com Programação Orientada a Objetos!**
 
 ---
 
 ## 📖 Sobre o Projeto
 
-Campo Minado Multiplayer desenvolvido em C# para console. Dois jogadores alternam turnos navegando pelo tabuleiro com as teclas WASD, tentando preencher posições, mas há uma bomba escondida aleatoriamente - quem pisar nela, perde!
+Campo Minado Multiplayer desenvolvido em C# para console com arquitetura orientada a objetos. Dois jogadores alternam turnos navegando pelo tabuleiro com as teclas WASD, tentando preencher posições, mas há uma bomba escondida aleatoriamente - quem pisar nela, perde!
 
-O projeto evoluiu da versão 1.0 (digitação numérica) para a versão 2.0 (navegação por cursor), aplicando conceitos avançados de captura de teclas e redesenho dinâmico de interface.
+O projeto evoluiu através de três versões:
+- **V1:** Sistema procedural com input numérico (1-9)
+- **V2:** Navegação por cursor com WASD (procedural)
+- **V3:** Refatoração completa para POO com encapsulamento e separação de responsabilidades
 
 ---
 
@@ -24,7 +27,9 @@ O projeto evoluiu da versão 1.0 (digitação numérica) para a versão 2.0 (nav
 ✅ **Easter egg divertido** para símbolos repetidos 💅  
 ✅ **Interface visual clara** com instruções permanentes  
 ✅ **Sistema de replay** para múltiplas partidas  
-✅ **Debug opcional** para testar posições das bombas  
+✅ **Arquitetura POO** com classes especializadas  
+✅ **Encapsulamento** de dados e comportamentos  
+✅ **Sobrecarga de métodos** para flexibilidade de exibição  
 
 ---
 
@@ -67,364 +72,585 @@ Use A, W, S, D para mover | ENTER para confirmar
 
 ---
 
-## 🔥 Destaques Técnicos
+## 🏗️ Evolução Arquitetural: De Procedural para POO
 
-### 1️⃣ Sistema de Captura de Teclas Especiais
+### 📊 Comparação de Paradigmas
 
-```csharp
-ConsoleKeyInfo input;
-do
-{
-    input = Console.ReadKey(true); // true = não exibe a tecla
-    
-    if (input.Key == ConsoleKey.W || 
-        input.Key == ConsoleKey.A || 
-        input.Key == ConsoleKey.S || 
-        input.Key == ConsoleKey.D || 
-        input.Key == ConsoleKey.Enter)
-    {
-        entradaValida = true;
-    }
-} while (!entradaValida);
+#### **V1/V2 (Procedural)**
+```
+Main()
+├── string[,] matriz (passada por parâmetro em todo lugar)
+├── bool[,] bombas (variável estática global)
+├── Métodos estáticos soltos
+└── Dados e comportamentos separados
 ```
 
-**Diferencial:** `Console.ReadKey(true)` captura teclas sem necessidade de Enter, permitindo navegação fluida.
-
----
-
-### 2️⃣ Cursor Visual Dinâmico
-
-```csharp
-public static void ExibirTabuleiro(string[,] matriz, int linhaAtual, int colunaAtual)
-{
-    for (int i = 0; i < 3; i++)
-    {
-        for (int j = 0; j < 3; j++)
-        {
-            // Posição do cursor = ◼️ (destacado)
-            if (i == linhaAtual && j == colunaAtual)
-            {
-                Console.Write("  ◼️  ");
-            }
-            // Outras posições = conteúdo normal
-            else
-            {
-                Console.Write($"  {matriz[i, j]}  ");
-            }
-        }
-    }
-}
+#### **V3 (Orientado a Objetos)**
+```
+Main()
+├── Tabuleiro (objeto com estado próprio)
+│   ├── matriz[,] (privado/encapsulado)
+│   ├── TamanhoMatriz (property)
+│   └── métodos: PosicaoOcupada(), ColocarSimbolo()
+│
+├── Bomba (objeto com posição encapsulada)
+│   ├── linha, coluna (privados)
+│   ├── Properties de acesso
+│   └── métodos: TemBomba(), RevelarBomba()
+│
+├── Jogador (identidade completa)
+│   ├── Nome (property)
+│   └── Simbolo (property)
+│
+└── Classes especializadas de UI e lógica
 ```
 
-**Lógica elegante:** Cursor sobrepõe visualmente a posição atual sem modificar a matriz de dados.
+### ✨ Benefícios da Refatoração POO
 
----
-
-### 3️⃣ Navegação com Limites de Borda
-
+#### **1. Encapsulamento de Dados**
 ```csharp
-if (input.Key == ConsoleKey.D && colunaAtual < 2)
-{
-    colunaAtual++; // Move direita (se não estiver na borda)
-}
-else if (input.Key == ConsoleKey.A && colunaAtual > 0)
-{
-    colunaAtual--; // Move esquerda (se não estiver na borda)
-}
-else if (input.Key == ConsoleKey.S && linhaAtual < 2)
-{
-    linhaAtual++; // Move baixo (se não estiver na borda)
-}
-else if (input.Key == ConsoleKey.W && linhaAtual > 0)
-{
-    linhaAtual--; // Move cima (se não estiver na borda)
-}
+// ❌ Antes (V2): Matriz exposta, qualquer um pode modificar
+string[,] matriz = new string[3,3];
+matriz[0,0] = "qualquer coisa"; // Sem controle!
+
+// ✅ Agora (V3): Acesso controlado através do objeto
+Tabuleiro tabuleiro = new Tabuleiro(3);
+tabuleiro.ColocarSimbolo(0, 0, "💀"); // Método controlado
 ```
 
-**Validação inteligente:** Impede que o cursor saia do tabuleiro 3x3.
-
----
-
-### 4️⃣ Sistema de Bombas Ocultas (v1.0)
-
+#### **2. Responsabilidade Única**
 ```csharp
+// ❌ Antes: Bomba era apenas um array global
 static bool[,] bombas;
 
-public static void GerarBombaAleatoria()
+// ✅ Agora: Bomba é um objeto com comportamento próprio
+Bomba bomba = new Bomba(3);
+if (bomba.TemBomba(linha, coluna))
+    bomba.RevelarBomba(tabuleiro);
+```
+
+#### **3. Escalabilidade**
+```csharp
+// ❌ Antes: Para múltiplas bombas, precisaria refatorar tudo
+// ✅ Agora: Basta criar uma lista de objetos
+List<Bomba> bombas = new List<Bomba>();
+bombas.Add(new Bomba(3));
+bombas.Add(new Bomba(3));
+// Cada bomba gerencia sua própria posição!
+```
+
+#### **4. Código Mais Limpo**
+```csharp
+// ❌ Antes: Parâmetros sendo passados repetidamente
+ExibirJogada(matriz, simbolo);
+VerificarEmpate(matriz);
+ExibirEmpate(matriz);
+
+// ✅ Agora: Objetos carregam seu próprio estado
+ExibirJogada(tabuleiro, bomba, simbolo);
+VerificarEmpate(tabuleiro, bomba);
+ExibirEmpate(tabuleiro, bomba);
+// tabuleiro já "sabe" sua matriz internamente
+```
+
+---
+
+## 📦 Arquitetura de Classes (V3)
+
+### **Classe `Tabuleiro`**
+Encapsula toda a lógica relacionada ao estado do tabuleiro.
+
+```csharp
+class Tabuleiro
 {
-    // Limpa array anterior (evita acúmulo entre partidas)
-    bombas = new bool[3, 3];
+    private string[,] matriz;              // Dados protegidos
+    public int TamanhoMatriz { get; }      // Property somente leitura
     
-    Random random = new Random();
-    int posicaoBomba = random.Next(1, 10);
-    
-    // Converte posição (1-9) para índices da matriz (0-2)
-    int linha = (posicaoBomba - 1) / 3;
-    int coluna = (posicaoBomba - 1) % 3;
-    
-    bombas[linha, coluna] = true;
+    public Tabuleiro(int tamanho)          // Constructor
+    public bool PosicaoOcupada(int linha, int coluna)
+    public void ColocarSimbolo(int linha, int coluna, string simbolo)
 }
 ```
 
-**Desafio resolvido:** Array `static` acumulava bombas entre partidas → Solução: recriar array dentro do método.
+**Responsabilidades:**
+- ✅ Gerenciar estado da matriz
+- ✅ Validar posições ocupadas
+- ✅ Modificar conteúdo de forma controlada
+- ✅ Proteger dados internos (encapsulamento)
 
 ---
 
-### 5️⃣ Detecção Inteligente de Empate
+### **Classe `Bomba`**
+Cada bomba é um objeto independente com sua própria posição.
 
 ```csharp
-public static bool VerificarEmpate(string[,] matriz)
+class Bomba
 {
-    for (int i = 0; i < 3; i++)
-    {
-        for (int j = 0; j < 3; j++)
-        {
-            // Se tem ◻️ vazio E NÃO É bomba = ainda tem jogadas possíveis
-            if (matriz[i, j] == "◻️")
-            {
-                int posicao = i * 3 + j + 1;
-                if (!Bomba.TemBomba(posicao))
-                {
-                    return false; // Ainda dá pra jogar
-                }
-            }
-        }
-    }
-    return true; // Só sobrou a bomba = empate!
-}
-```
-
-**Lógica elegante:** Ignora bombas escondidas ao verificar espaços livres.
-
----
-
-### 6️⃣ Validação de Posição Ocupada
-
-```csharp
-else if (input.Key == ConsoleKey.Enter)
-{
-    int posicao = linhaAtual * 3 + colunaAtual + 1;
+    private int linha;                     // Posição encapsulada
+    private int coluna;
     
-    // Verifica bomba primeiro
-    if (Bomba.TemBomba(posicao))
-    {
-        matriz[linhaAtual, colunaAtual] = "💣";
-        ExibirTabuleiro(matriz, -1, -1);
-        return true; // Explosão
-    }
-    // Verifica se está ocupada (não é ◻️)
-    else if (matriz[linhaAtual, colunaAtual] != "◻️")
-    {
-        Console.WriteLine("\nPosição já ocupada, escolha outra!\n");
-        // Continua no loop, não retorna
-    }
-    else
-    {
-        // Posição livre, coloca símbolo
-        matriz[linhaAtual, colunaAtual] = simbolo;
-        return false;
-    }
+    public Bomba(int tamanhoTabuleiro)     // Constructor com Random
+    public int Linha { get; }              // Property somente leitura
+    public int Coluna { get; }
+    
+    public bool TemBomba(int linha, int coluna)
+    public void RevelarBomba(Tabuleiro tabuleiro)
 }
 ```
 
-**Hierarquia de verificação:**
-1. Bomba? → Explode
-2. Ocupada? → Avisa e continua
-3. Livre? → Coloca símbolo
+**Responsabilidades:**
+- ✅ Gerar posição aleatória no constructor
+- ✅ Verificar se está em coordenada específica
+- ✅ Revelar-se no tabuleiro quando necessário
+- ✅ Cada instância é uma bomba independente (preparado para múltiplas bombas!)
 
 ---
 
-### 7️⃣ Revelação no Empate
+### **Classe `Jogador`**
+Representa a identidade completa de um jogador.
 
 ```csharp
-public static void RevelarBombas(string[,] matriz)
+class Jogador
 {
-    for (int i = 0; i < 3; i++)
+    public string Nome { get; private set; }     // Só pode ser setado internamente
+    public string Simbolo { get; private set; }
+    
+    public Jogador(string nome, string simbolo)  // Constructor
+}
+```
+
+**Responsabilidades:**
+- ✅ Armazenar identidade do jogador
+- ✅ Encapsular nome e símbolo juntos
+- ✅ Facilitar passagem de dados relacionados
+
+**Vantagem sobre strings soltas:**
+```csharp
+// ❌ Antes: Dados espalhados
+string player1 = "💀";
+string nomePlayer1 = "Jogador 1"; // Se existisse
+
+// ✅ Agora: Tudo em um objeto
+Jogador jogador1 = new Jogador("Jogador 1", "💀");
+Console.WriteLine($"{jogador1.Simbolo} {jogador1.Nome} VENCEU!");
+```
+
+---
+
+### **Classe `ExibirMatriz`**
+Responsável por toda interação visual e captura de input.
+
+```csharp
+class ExibirMatriz
+{
+    public static bool ExibirJogada(Tabuleiro tabuleiro, Bomba bomba, string simbolo)
+    public static void ExibirTabuleiro(Tabuleiro tabuleiro, int linhaAtual, int colunaAtual)
+    public static void ExibirTabuleiro(Tabuleiro tabuleiro)  // Sobrecarga!
+}
+```
+
+**Responsabilidades:**
+- ✅ Captura de teclas (WASD + Enter)
+- ✅ Navegação com cursor
+- ✅ Exibição dinâmica do tabuleiro
+- ✅ Validação de movimentos e bordas
+
+**Sobrecarga de Método:**
+```csharp
+// Durante navegação (com cursor)
+ExibirTabuleiro(tabuleiro, linhaAtual, colunaAtual);
+
+// Exibição final (sem cursor)
+ExibirTabuleiro(tabuleiro);  // Internamente chama a versão com -1, -1
+```
+
+---
+
+### **Classe `CondicaoDeVitoria`**
+Gerencia condições de término e exibição de resultados.
+
+```csharp
+class CondicaoDeVitoria
+{
+    public static bool VerificarEmpate(Tabuleiro tabuleiro, Bomba bomba)
+    public static void ExibirEmpate(Tabuleiro tabuleiro, Bomba bomba)
+    public static bool JogarNovamente()
+    public static void EnterParaContinuar()
+}
+```
+
+**Responsabilidades:**
+- ✅ Verificar condição de empate
+- ✅ Exibir tela de empate com bombas reveladas
+- ✅ Interface de "Jogar Novamente" (navegação Sim/Não)
+- ✅ Pausas e controle de fluxo
+
+---
+
+### **Classe `SelecaoSimbolo`**
+Interface especializada para escolha de símbolos.
+
+```csharp
+class SelecaoSimbolo
+{
+    private static readonly string[] simbolos = { "💀", "👽", "💩", ... };
+    
+    public static int TotalSimbolos()
+    public static void ExibirSimbolo(string player, int linhaAtual)
+    public static string Selecionar(string player)
+}
+```
+
+**Responsabilidades:**
+- ✅ Gerenciar lista de símbolos disponíveis
+- ✅ Interface de navegação W/S para seleção
+- ✅ Validação de input
+- ✅ Retorno do emoji escolhido
+
+---
+
+## 🔥 Destaques Técnicos de POO
+
+### 1️⃣ Encapsulamento com Properties
+
+```csharp
+class Tabuleiro
+{
+    private string[,] matriz;  // Campo privado - ninguém acessa diretamente
+    
+    public string[,] Matriz    // Property pública - acesso controlado
     {
-        for (int j = 0; j < 3; j++)
-        {
-            int posicao = i * 3 + j + 1;
-            if (Bomba.TemBomba(posicao))
-            {
-                matriz[i, j] = "💣";
-            }
-        }
+        get { return matriz; }  // Permite leitura
+        // Sem setter - ninguém pode substituir a matriz inteira
     }
 }
 ```
 
-No empate, todas as bombas são reveladas - jogadores veem o quão perto estiveram da explosão!
+**Vantagem:** Protege dados internos enquanto permite leitura controlada.
 
 ---
 
-### 8️⃣ Fórmula Matemática para Conversão (Herança v1.0)
+### 2️⃣ Constructors para Inicialização
 
 ```csharp
-// Converte posição da matriz (0-2) para número do tabuleiro (1-9)
-int valor = i * 3 + j + 1;
+// Antes: Inicialização manual em vários lugares
+string[,] matriz = new string[3, 3];
+for (int i = 0; i < 3; i++)
+    for (int j = 0; j < 3; j++)
+        matriz[i, j] = "◻️";
 
-// Explicação:
-// i * 3 = elementos "pulados" nas linhas anteriores
-// + j = posição dentro da linha atual
-// + 1 = ajuste (índices começam em 0, queremos começar de 1)
+// Agora: Inicialização automática no constructor
+Tabuleiro tabuleiro = new Tabuleiro(3);
+// Já vem com tudo inicializado internamente!
 ```
 
-**Exemplo:** [1,1] → 1 * 3 + 1 + 1 = 5 ✅
+```csharp
+public Tabuleiro(int tamanho)
+{
+    TamanhoMatriz = tamanho;
+    matriz = new string[TamanhoMatriz, TamanhoMatriz];
+    
+    for (int i = 0; i < TamanhoMatriz; i++)
+        for (int j = 0; j < TamanhoMatriz; j++)
+            matriz[i, j] = "◻️";
+}
+```
 
 ---
 
-## 🏗️ Arquitetura
+### 3️⃣ Sobrecarga de Métodos (Method Overloading)
 
+```csharp
+// Versão completa (para navegação)
+public static void ExibirTabuleiro(Tabuleiro tabuleiro, int linhaAtual, int colunaAtual)
+{
+    // ... lógica com cursor
+}
+
+// Versão simplificada (para exibição final)
+public static void ExibirTabuleiro(Tabuleiro tabuleiro)
+{
+    ExibirTabuleiro(tabuleiro, -1, -1);  // Reutiliza a versão completa
+}
 ```
-Pratica/
-├── ExibirMatriz        → Navegação, captura de teclas e exibição
-├── CondicaoDeVitoria   → Verificação de empate e exibição de resultado
-├── Jogador             → Seleção de símbolos personalizados
-├── Bomba               → Geração, verificação e revelação de bombas
-└── Program             → Orquestração do fluxo do jogo
+
+**Vantagem:** 
+- Mesma lógica de exibição em um lugar só (DRY)
+- Interface mais limpa para o chamador
+- Fácil manutenção (mudanças em um lugar afetam ambas)
+
+---
+
+### 4️⃣ Separação de Responsabilidades (SRP)
+
+Cada classe tem **UMA** responsabilidade clara:
+
+| Classe | Responsabilidade | O que NÃO faz |
+|--------|-----------------|---------------|
+| `Tabuleiro` | Gerenciar estado da matriz | ❌ Não desenha na tela |
+| `Bomba` | Saber sua posição e revelar-se | ❌ Não desenha o tabuleiro |
+| `ExibirMatriz` | Interface visual e input | ❌ Não valida empate |
+| `CondicaoDeVitoria` | Verificar fim de jogo | ❌ Não gerencia símbolos |
+| `Jogador` | Identidade do jogador | ❌ Não interage com tabuleiro |
+
+---
+
+### 5️⃣ Objetos com Estado Próprio
+
+```csharp
+// Cada objeto carrega seu próprio estado
+Bomba bomba1 = new Bomba(3);  // Posição: [1, 2]
+Bomba bomba2 = new Bomba(3);  // Posição: [0, 0]
+Bomba bomba3 = new Bomba(3);  // Posição: [2, 1]
+
+// Não precisam de array global compartilhado!
+// Cada bomba "sabe" onde está
 ```
 
-### 📐 Separação de Responsabilidades
+**Preparado para evolução:**
+```csharp
+List<Bomba> bombas = new List<Bomba>
+{
+    new Bomba(3),
+    new Bomba(3),
+    new Bomba(3)
+};
 
-- **ExibirMatriz:** Interface interativa com navegação por cursor
-- **CondicaoDeVitoria:** Lógica de término e exibição de resultados
-- **Jogador:** Sistema de personalização de símbolos
-- **Bomba:** Toda a lógica de armadilhas (encapsulada)
-- **Program:** Fluxo principal e loop de partidas
+// Verificar todas
+foreach (var bomba in bombas)
+{
+    if (bomba.TemBomba(linha, coluna))
+        return true;
+}
+```
 
 ---
 
 ## 💡 Conceitos C# Aplicados
 
-✅ **Matrizes Bidimensionais** (`string[,]` para tabuleiro, `bool[,]` para bombas)  
-✅ **Arrays Estáticos** (`static bool[,]`) compartilhados entre métodos  
-✅ **ConsoleKeyInfo** para captura de teclas especiais  
-✅ **Enumerações ConsoleKey** (UpArrow, DownArrow, Enter, etc)  
+### **Fundamentos**
+✅ **Matrizes Bidimensionais** (`string[,]`)  
+✅ **Classes e Objetos** (instanciação com `new`)  
+✅ **Encapsulamento** (`private` fields + `public` properties)  
+✅ **Constructors** para inicialização automática  
+✅ **Properties** (`get`, `private set`)  
+✅ **Method Overloading** (sobrecarga)  
+
+### **POO Avançado**
+✅ **Separação de Responsabilidades** (SRP do SOLID)  
+✅ **Coesão** (cada classe tem propósito único)  
+✅ **Baixo Acoplamento** (classes conversam por interfaces claras)  
+✅ **Objetos com Estado** (cada instância é independente)  
+
+### **Boas Práticas**
+✅ **DRY** (Don't Repeat Yourself) - sobrecarga de método  
+✅ **Naming Conventions** (PascalCase para classes/métodos)  
+✅ **XML Comments** (`/// <summary>`)  
+✅ **Defensive Programming** (validações em métodos públicos)  
+
+### **Console/Input**
+✅ **ConsoleKeyInfo** para captura de teclas  
 ✅ **Console.ReadKey(true)** para leitura sem echo  
-✅ **Console.Clear()** para redesenho dinâmico de tela  
-✅ **Random** para geração aleatória de bombas  
-✅ **TryParse** para validação sem exceções (seleção de símbolos)  
-✅ **String Interpolation** (`$"{variavel}"`)  
-✅ **Métodos Estáticos** e organização modular  
-✅ **Loops Aninhados** para percorrer matrizes 2D  
-✅ **Flags Booleanas** para controle de fluxo (explosão, empate)  
-✅ **Parâmetros para controle visual** (linhaAtual, colunaAtual)  
+✅ **Console.Clear()** para redesenho dinâmico  
+✅ **Random** para geração aleatória  
 
 ---
 
-## 🎓 Aprendizados
+## 🎓 Aprendizados e Desafios Superados
 
-### Técnicos
-✅ Captura de teclas sem necessidade de Enter (`Console.ReadKey`)  
-✅ Redesenho eficiente de interface (`Console.Clear` + loop)  
-✅ Gerenciamento de cursor visual sem modificar dados  
-✅ Validação de limites de matriz (bordas)  
-✅ Separação de matriz visual vs matriz lógica  
-✅ Gerenciamento de estado entre múltiplas partidas  
+### **1. Migração de Procedural para POO** 🏗️
 
-### Lógica de Jogos
-✅ Sistema de navegação 2D com WASD  
-✅ Feedback visual instantâneo (cursor em tempo real)  
-✅ Mecânica de risco/recompensa (cada jogada pode ser fatal)  
-✅ Balanceamento: 1 bomba em 9 posições = ~11% de risco por turno  
-✅ Experiência de usuário fluida e intuitiva  
+**Desafio:** Transformar código procedural funcional em POO sem quebrar nada.
 
-### Boas Práticas
-✅ **DRY:** Método `ExibirTabuleiro()` reutilizado em todos os momentos  
-✅ **SRP:** Cada classe com responsabilidade única e bem definida  
-✅ **Encapsulamento:** Array de bombas privado, acesso via métodos públicos  
-✅ **Defensive Programming:** Validações em teclas e limites de borda  
-✅ **UX:** Instruções permanentes na tela, feedback claro  
-✅ **Escalabilidade:** Fácil adaptar para tabuleiros maiores  
-
----
-
-## 🔍 Desafios Superados
-
-### 1. **Migração de Sistema Numérico para Visual** 🎯
-**Desafio v1 → v2:** Transformar input numérico (1-9) em navegação por cursor.  
-**Solução:** Sistema de coordenadas (linhaAtual, colunaAtual) + redesenho dinâmico.
+**Solução:**
+1. Identificar entidades naturais (Tabuleiro, Bomba, Jogador)
+2. Mover dados relacionados para dentro das classes
+3. Transformar funções em métodos das classes apropriadas
+4. Testar incrementalmente cada refatoração
 
 ```csharp
-// v1.0: Input direto
-int posicao = int.Parse(Console.ReadLine());
+// Antes: Dados e funções separados
+string[,] matriz = new string[3,3];
+bool PosicaoOcupada(string[,] matriz, int linha, int coluna) { ... }
 
-// v2.0: Navegação + conversão
-int posicao = linhaAtual * 3 + colunaAtual + 1;
-```
-
----
-
-### 2. **Captura de Teclas Especiais** ⌨️
-**Problema:** `Console.ReadLine()` exige Enter, quebrando fluidez da navegação.  
-**Solução:** `Console.ReadKey(true)` captura teclas individuais sem echo.
-
-```csharp
-ConsoleKeyInfo input = Console.ReadKey(true);
-if (input.Key == ConsoleKey.W) { /* move */ }
-```
-
----
-
-### 3. **Cursor Visual sem Modificar Dados** 🔳
-**Problema:** Como mostrar cursor sem sobrescrever o conteúdo da matriz?  
-**Solução:** Parâmetros separados (linhaAtual, colunaAtual) passados para `ExibirTabuleiro()`.
-
-```csharp
-// Cursor é visual, não altera matriz[i, j]
-if (i == linhaAtual && j == colunaAtual)
-    Console.Write("  ◼️  ");
-else
-    Console.Write($"  {matriz[i, j]}  ");
-```
-
----
-
-### 4. **Acúmulo de Bombas Entre Partidas** 🐛 (v1.0)
-**Problema:** Array `static bool[,] bombas = new bool[3, 3]` inicializava apenas uma vez.  
-**Sintoma:** Partidas subsequentes acumulavam bombas anteriores.  
-**Solução:** Mover `new bool[3, 3]` para dentro de `GerarBombaAleatoria()`.
-
----
-
-### 5. **Empate Ignorando Bomba Escondida** 🎯
-**Problema:** Verificação contava posição da bomba como "livre".  
-**Solução:** Verificar se `◻️` **E** não é bomba simultaneamente.
-
-```csharp
-if (matriz[i, j] == "◻️")
-{
-    int posicao = i * 3 + j + 1;
-    if (!Bomba.TemBomba(posicao)) // Ignora bombas!
-        return false;
+// Depois: Dados e comportamento juntos
+class Tabuleiro {
+    private string[,] matriz;
+    public bool PosicaoOcupada(int linha, int coluna) { ... }
 }
 ```
 
 ---
 
-### 6. **Validação de Bordas** 🚧
-**Problema:** Cursor pode sair do tabuleiro 3x3.  
-**Solução:** Validação antes de incrementar/decrementar coordenadas.
+### **2. Encapsulamento Efetivo** 🔒
+
+**Desafio:** Proteger dados sem perder funcionalidade.
+
+**Solução:** Properties com `get` público e `set` privado ou inexistente.
 
 ```csharp
-if (input.Key == ConsoleKey.D && colunaAtual < 2) // Não sai pela direita
-    colunaAtual++;
+class Bomba
+{
+    private int linha;  // Completamente privado
+    
+    public int Linha { get { return linha; } }  // Leitura permitida
+    // Sem setter - ninguém pode mudar a posição depois de criada
+}
 ```
+
+---
+
+### **3. Sobrecarga de Métodos Inteligente** 🎯
+
+**Desafio:** Evitar duplicação de código na exibição do tabuleiro (com/sem cursor).
+
+**Solução:** Método sobrecarregado que reutiliza a lógica completa.
+
+```csharp
+// Evita isto (código duplicado):
+public static void ExibirTabuleiro(Tabuleiro tabuleiro, int l, int c) { ... 20 linhas ... }
+public static void ExibirTabuleiroSemCursor(Tabuleiro tabuleiro) { ... 20 linhas repetidas ... }
+
+// Faz isto (DRY):
+public static void ExibirTabuleiro(Tabuleiro tabuleiro, int l, int c) { ... 20 linhas ... }
+public static void ExibirTabuleiro(Tabuleiro tabuleiro) {
+    ExibirTabuleiro(tabuleiro, -1, -1);  // 1 linha!
+}
+```
+
+---
+
+### **4. Responsabilidade de Revelação** 💣
+
+**Desafio:** Quem deve revelar a bomba? A bomba mesmo ou o tabuleiro?
+
+**Solução:** A bomba se revela, mas precisa do tabuleiro para fazê-lo.
+
+```csharp
+class Bomba
+{
+    public void RevelarBomba(Tabuleiro tabuleiro)
+    {
+        tabuleiro.ColocarSimbolo(linha, coluna, "💣");
+    }
+}
+```
+
+**Princípio:** Bomba conhece sua posição, Tabuleiro conhece como modificar a matriz. Colaboração!
+
+---
+
+### **5. Constructor com Lógica** 🎲
+
+**Desafio:** Gerar posição aleatória quando o objeto é criado.
+
+**Solução:** Lógica completa no constructor.
+
+```csharp
+public Bomba(int tamanhoTabuleiro)
+{
+    Random random = new Random();
+    int posicaoBomba = random.Next(1, tamanhoTabuleiro * tamanhoTabuleiro + 1);
+    
+    this.linha = (posicaoBomba - 1) / tamanhoTabuleiro;
+    this.coluna = (posicaoBomba - 1) % tamanhoTabuleiro;
+}
+```
+
+**Vantagem:** `Bomba bomba = new Bomba(3);` já cria a bomba pronta para uso!
+
+---
+
+## 📊 Comparação de Código: Antes vs Depois
+
+### **Criando uma Partida**
+
+#### ❌ V2 (Procedural)
+```csharp
+string[,] campoMinado = new string[3, 3];
+for (int i = 0; i < 3; i++)
+    for (int j = 0; j < 3; j++)
+        campoMinado[i, j] = "◻️";
+
+Bomba.GerarBombaAleatoria();  // Modifica variável estática global
+```
+
+#### ✅ V3 (POO)
+```csharp
+Tabuleiro tabuleiro = new Tabuleiro(3);  // Já inicializa tudo
+Bomba bomba = new Bomba(3);              // Já gera posição aleatória
+```
+
+**Benefício:** Mais limpo, mais claro, menos linhas.
+
+---
+
+### **Verificando Bomba**
+
+#### ❌ V2 (Procedural)
+```csharp
+int posicao = linhaAtual * 3 + colunaAtual + 1;
+if (Bomba.TemBomba(posicao))  // Acessa array estático global
+{
+    matriz[linhaAtual, colunaAtual] = "💣";
+}
+```
+
+#### ✅ V3 (POO)
+```csharp
+if (bomba.TemBomba(linhaAtual, colunaAtual))  // Pergunta ao objeto
+{
+    bomba.RevelarBomba(tabuleiro);  // Objeto se revela
+}
+```
+
+**Benefício:** Leitura natural, bomba gerencia seu próprio comportamento.
+
+---
+
+### **Jogadores**
+
+#### ❌ V2 (Procedural)
+```csharp
+string player1 = "💀";
+string player2 = "👽";
+// Nome não existe, só o símbolo
+Console.WriteLine($"{player1} VENCEU!");  // Só mostra emoji
+```
+
+#### ✅ V3 (POO)
+```csharp
+Jogador jogador1 = new Jogador("Jogador 1", "💀");
+Jogador jogador2 = new Jogador("Jogador 2", "👽");
+Console.WriteLine($"{jogador1.Simbolo} {jogador1.Nome} VENCEU!");
+```
+
+**Benefício:** Identidade completa, mais informação, código mais expressivo.
 
 ---
 
 ## 💻 Tecnologias
 
 - **Linguagem:** C# 12 (.NET 8)
-- **Paradigma:** Programação Orientada a Objetos
+- **Paradigma:** Programação Orientada a Objetos (POO)
 - **IDE:** Visual Studio 2022 / VS Code
-- **Conceitos:** Matrizes, Randomização, Captura de Teclas, Interface Dinâmica
+- **Conceitos:** Classes, Encapsulamento, Properties, Constructors, Sobrecarga, Separação de Responsabilidades
 
 ---
 
 ## 📊 Changelog
 
-### **v2.0** (Atual) - Sistema de Navegação Visual
+### **v3.0** (Atual) - Refatoração POO
+- ✅ Arquitetura orientada a objetos completa
+- ✅ Classe `Tabuleiro` com encapsulamento da matriz
+- ✅ Classe `Bomba` com posição encapsulada e comportamento próprio
+- ✅ Classe `Jogador` com identidade completa (nome + símbolo)
+- ✅ Sobrecarga de método `ExibirTabuleiro()` para flexibilidade
+- ✅ Separação clara de responsabilidades (SRP)
+- ✅ Preparado para escalabilidade (múltiplas bombas, tamanhos variados)
+- ✅ Código mais manutenível e legível
+
+### **v2.0** - Sistema de Navegação Visual
 - ✅ Navegação com WASD ao invés de digitação numérica
 - ✅ Cursor visual com ◼️ e ◻️
 - ✅ Captura de teclas com `Console.ReadKey()`
@@ -441,47 +667,31 @@ if (input.Key == ConsoleKey.D && colunaAtual < 2) // Não sai pela direita
 
 ---
 
-## 🚀 Evoluções Futuras (Roadmap v3)
+## 🎯 Jornada de Aprendizado
 
-### Em Planejamento:
-- [ ] **Tabuleiros maiores** (4x4, 5x5, customizável)
-- [ ] **Múltiplas bombas** (dificuldade escalável)
-- [ ] **Setas do teclado** como alternativa ao WASD
-- [ ] **Placar persistente** entre partidas
-- [ ] **Modos de dificuldade** (Fácil, Médio, Difícil, Insano)
-- [ ] **Animações** de explosão no console
-- [ ] **Sons** (se migrar para interface gráfica)
-- [ ] **Campo Minado tradicional** com números adjacentes
+### **Por que esta evolução importa?**
 
----
+Este projeto demonstra a capacidade de:
 
-## 🎮 Gameplay Único
+✅ **Evoluir código incrementalmente** sem reescrever do zero  
+✅ **Aplicar POO em código procedural existente** (refatoração)  
+✅ **Entender trade-offs** entre simplicidade inicial e arquitetura escalável  
+✅ **Implementar conceitos avançados** (encapsulamento, sobrecarga, SRP)  
+✅ **Pensar em design** além de "fazer funcionar"  
 
-### 🔥 Por que este jogo é diferente?
+### **Habilidades Demonstradas**
 
-**Campo Minado tradicional:** Puzzle solo de dedução lógica  
-**Este jogo:** Competição multiplayer com risco compartilhado
-
-- **Tensão constante:** Qualquer jogada pode ser a última
-- **Controle direto:** Navegação física pelo tabuleiro
-- **Sorte + Estratégia:** Evitar posições arriscadas sem saber onde está a bomba
-- **Partidas rápidas:** 2-5 minutos de pura adrenalina
-- **Rejogabilidade alta:** Cada partida é completamente diferente
-- **Interface intuitiva:** Visual limpo e controles responsivos
-
-### 💭 Filosofia do Design
-
-> "E se o Campo Minado fosse uma competição ao invés de um quebra-cabeça?  
-> E se dois amigos tivessem que navegar pelo perigo juntos, mas apenas um perdesse?  
-> E se a experiência fosse tão fluida quanto um jogo moderno, mas rodasse no console?"
-
-Este projeto nasceu da fusão de três elementos: **Jogo da Velha** (turnos) + **Campo Minado** (perigo oculto) + **Navegação moderna** (WASD fluido).
+- **Análise:** Identificar entidades naturais em um problema
+- **Design:** Separar responsabilidades de forma coerente
+- **Refatoração:** Melhorar código sem quebrar funcionalidade
+- **POO:** Aplicar princípios de encapsulamento e coesão
+- **Escalabilidade:** Código preparado para crescer (múltiplas bombas, etc)
 
 ---
 
 ## 👨‍💻 Sobre o Desenvolvedor
 
-**Gabriel Henrique Cé**  
+**Gabriel Henriques Cé**  
 LinkedIn: [Gabriel Henrique Cé](https://linkedin.com/in/gabrielhenriquece)  
 GitHub: [@GabrielHenriqueCe](https://github.com/GabrielHenriqueCe)
 
@@ -493,29 +703,23 @@ MIT License - Código aberto para fins educacionais
 
 ---
 
-## 🎮 Da Mecânica Simples à Experiência Polida
+## 🎮 Da Simplicidade à Arquitetura
 
-_"Começou como um Jogo da Velha com uma bomba.  
-Evoluiu para um sistema de navegação visual fluido.  
-Mas o coração continua o mesmo: dois amigos, um tabuleiro, e a tensão de não saber onde vai explodir."_
+_"V1 fez funcionar.  
+V2 tornou intuitivo.  
+V3 estruturou para crescer._
 
----
-
-**Status:** 🟢 **v2.0 Completo** - Jogo Funcional com Navegação Visual  
-**Última Atualização:** Dezembro 2025  
-**Linhas de Código:** 321 
-**Baseado em:** [Jogo-da-Velha-Console-Csharp](https://github.com/GabrielHenriqueCe/Jogo-da-Velha)
+_A mesma bomba, o mesmo tabuleiro, a mesma diversão...  
+Mas agora com uma fundação sólida para evoluir."_
 
 ---
 
-## 🎲 Estatísticas de Jogo
-
-- **Probabilidade de explodir no 1º turno:** ~11% (1/9)
-- **Probabilidade de empate:** ~22% (2/9 posições sobram)
-- **Partidas médias até explosão:** 4-5 turnos
-- **Tempo médio por partida:** 2-3 minutos
-- **Teclas pressionadas por partida:** ~15-25 (navegação + confirmação)
+**Status:** 🟢 **v3.0 Completo** - Arquitetura POO Sólida  
+**Última Atualização:** Dezembro 2024  
+**Linhas de Código:** ~450  
+**Classes:** 7 (Tabuleiro, Bomba, Jogador, ExibirMatriz, CondicaoDeVitoria, SelecaoSimbolo, Program)  
+**Baseado em:** [Campo-Minado V2](https://github.com/GabrielHenriqueCe/Campo-Minado-Csharp)
 
 ---
 
-### 💣 Navegue com cuidado... e boa sorte! 🍀
+### 💣 Código limpo, arquitetura sólida, jogo divertido! 🚀
