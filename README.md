@@ -24,7 +24,7 @@ O projeto evoluiu através de três versões:
 ✅ **Sistema de empate** com revelação de bombas  
 ✅ **Validação robusta** de teclas (apenas WASD + Enter)  
 ✅ **Verificação dinâmica** de posição ocupada  
-✅ **Easter egg divertido** para símbolos repetidos 💅  
+✅ **Easter egg divertido** para símbolos repetidos ☃️  
 ✅ **Interface visual clara** com instruções permanentes  
 ✅ **Sistema de replay** para múltiplas partidas  
 ✅ **Arquitetura POO** com classes especializadas  
