@@ -494,10 +494,10 @@ namespace Pratica
                 Console.Clear();
                 Jogador jogador2 = new Jogador("Jogador 2", SelecaoSimbolo.Selecionar("Jogador 2"));
 
-                // Easter egg: se escolherem o mesmo, Player 2 vira 💅
+                // Easter egg: se escolherem o mesmo, Player 2 vira ☃️
                 if (jogador1.Simbolo == jogador2.Simbolo)
                 {
-                    jogador2 = new Jogador(jogador2.Nome, "💅");
+                    jogador2 = new Jogador(jogador2.Nome, "☃️");
                 }
 
                 Console.Clear();
