@@ -257,8 +257,8 @@ namespace Pratica
                 string player2 = Jogador.EscolherSimbolo("Jogador 2");
                 if (player1 == player2)
                 {
-                    // Easter egg: se escolherem o mesmo símbolo, Player 2 é "punido" 💅
-                    player2 = "💅";
+                    // Easter egg: se escolherem o mesmo símbolo, Player 2 é "punido" ☃️
+                    player2 = "☃️";
                 }
                 Console.Clear();
 
