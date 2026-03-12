@@ -110,5 +110,4 @@ Requer **.NET 8+** e terminal com suporte a **UTF-8** para exibir os emojis corr
 
 **Gabriel Henriques Cé** — Engenharia de Software (3º semestre)
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Gabriel_Henriques_Cé-blue)](https://linkedin.com/in/gabrielhenriquece)
-[![GitHub](https://img.shields.io/badge/GitHub-GabrielHenriqueCe-black)](https://github.com/GabrielHenriqueCe)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Gabriel_Henriques_Cé-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/gabriel-henrique-c%C3%A9-2a97b31a0)
